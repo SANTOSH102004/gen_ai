@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-import requests
+from transformers import pipeline
 import os
 from dotenv import load_dotenv
 
@@ -8,8 +8,9 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Local LLM server configuration
-LOCAL_LLM_URL = os.getenv('LOCAL_LLM_URL', 'http://localhost:5000/v1/chat/completions')
+# Load the GPT-2 model locally (you can change this to a code-focused model like CodeLlama if available)
+model_name = os.getenv('MODEL_PATH', 'gpt2')
+generator = pipeline('text-generation', model=model_name)
 
 @app.route('/')
 def index():
@@ -26,41 +27,43 @@ def generate_snippet():
             return jsonify({'error': 'Prompt is required'}), 400
 
         # Create a detailed prompt for code generation
-        full_prompt = f"Generate a {language} code snippet for: {prompt}. Provide only the code without any explanation or markdown formatting."
+        full_prompt = f"Write a {language} code snippet for: {prompt}. Only provide the code, no explanations."
 
-        # Prepare payload for local LLM API (compatible with text-generation-webui or similar)
-        payload = {
-            "messages": [
-                {"role": "system", "content": "You are a helpful code generator. Generate clean, efficient code snippets."},
-                {"role": "user", "content": full_prompt}
-            ],
-            "max_tokens": 500,
-            "temperature": 0.3,
-            "stream": False
-        }
+        # Generate code using local transformer model
+        result = generator(
+            full_prompt,
+            max_length=200,
+            num_return_sequences=1,
+            temperature=0.7,
+            do_sample=True,
+            pad_token_id=50256
+        )
 
-        # Call local LLM API
-        response = requests.post(LOCAL_LLM_URL, json=payload, timeout=60)
+        generated_text = result[0]['generated_text']
 
-        if response.status_code != 200:
-            return jsonify({'error': f'LLM server error: {response.status_code}'}), 500
+        # Extract only the code part (after the prompt)
+        if generated_text.startswith(full_prompt):
+            code_snippet = generated_text[len(full_prompt):].strip()
+        else:
+            code_snippet = generated_text.strip()
 
-        result = response.json()
-        code_snippet = result['choices'][0]['message']['content'].strip()
-
-        # Remove any markdown code blocks if present
-        if code_snippet.startswith('```'):
-            code_snippet = code_snippet.split('```')[1]
-            if code_snippet.startswith(language.lower()):
-                code_snippet = code_snippet.split('\n', 1)[1]
-            code_snippet = code_snippet.rstrip('```').strip()
+        # Clean up the code (remove incomplete sentences)
+        if code_snippet:
+            # Split by newlines and take the first complete code block
+            lines = code_snippet.split('\n')
+            # Try to find a reasonable stopping point
+            clean_lines = []
+            for line in lines:
+                if line.strip() and not line.startswith('#') and len(clean_lines) < 10:  # Limit to 10 lines
+                    clean_lines.append(line)
+                elif len(clean_lines) >= 10:
+                    break
+            code_snippet = '\n'.join(clean_lines).strip()
 
         return jsonify({'code': code_snippet})
 
-    except requests.exceptions.RequestException as e:
-        return jsonify({'error': f'Failed to connect to local LLM server: {str(e)}'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=3000)  # Run on port 3000 to avoid conflict with LLM server
+    app.run(debug=True, port=3000)
