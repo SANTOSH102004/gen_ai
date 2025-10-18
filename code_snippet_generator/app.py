@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
-import openai
+import requests
 import os
 from dotenv import load_dotenv
 
@@ -8,10 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
 
-# Set OpenAI API key
-openai.api_key = os.getenv('OPENAI_API_KEY')
+# Local LLM server configuration
+LOCAL_LLM_URL = os.getenv('LOCAL_LLM_URL', 'http://localhost:5000/v1/chat/completions')
 
 @app.route('/')
 def index():
@@ -30,18 +28,25 @@ def generate_snippet():
         # Create a detailed prompt for code generation
         full_prompt = f"Generate a {language} code snippet for: {prompt}. Provide only the code without any explanation or markdown formatting."
 
-        # Call OpenAI API
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
+        # Prepare payload for local LLM API (compatible with text-generation-webui or similar)
+        payload = {
+            "messages": [
                 {"role": "system", "content": "You are a helpful code generator. Generate clean, efficient code snippets."},
                 {"role": "user", "content": full_prompt}
             ],
-            max_tokens=500,
-            temperature=0.3
-        )
+            "max_tokens": 500,
+            "temperature": 0.3,
+            "stream": False
+        }
 
-        code_snippet = response.choices[0].message.content.strip()
+        # Call local LLM API
+        response = requests.post(LOCAL_LLM_URL, json=payload, timeout=60)
+
+        if response.status_code != 200:
+            return jsonify({'error': f'LLM server error: {response.status_code}'}), 500
+
+        result = response.json()
+        code_snippet = result['choices'][0]['message']['content'].strip()
 
         # Remove any markdown code blocks if present
         if code_snippet.startswith('```'):
@@ -52,8 +57,10 @@ def generate_snippet():
 
         return jsonify({'code': code_snippet})
 
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': f'Failed to connect to local LLM server: {str(e)}'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=3000)  # Run on port 3000 to avoid conflict with LLM server
