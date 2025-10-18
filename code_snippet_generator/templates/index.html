@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Snippet Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Code Snippet Generator</h1>
+        <p>Enter a description of the code you want to generate, and I'll create it for you using AI!</p>
+
+        <form id="snippet-form">
+            <div class="form-group">
+                <label for="language">Programming Language:</label>
+                <select id="language" name="language">
+                    <option value="Python">Python</option>
+                    <option value="JavaScript">JavaScript</option>
+                    <option value="Java">Java</option>
+                    <option value="C++">C++</option>
+                    <option value="C#">C#</option>
+                    <option value="PHP">PHP</option>
+                    <option value="Ruby">Ruby</option>
+                    <option value="Go">Go</option>
+                    <option value="Rust">Rust</option>
+                    <option value="TypeScript">TypeScript</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="prompt">Describe the code you want:</label>
+                <textarea id="prompt" name="prompt" placeholder="e.g., Python function to sort a list" required></textarea>
+            </div>
+
+            <button type="submit" id="generate-btn">Generate Code</button>
+        </form>
+
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Generating your code snippet...</p>
+        </div>
+
+        <div id="result" class="result" style="display: none;">
+            <h3>Generated Code:</h3>
+            <pre><code id="code-output"></code></pre>
+            <button id="copy-btn">Copy Code</button>
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            <p id="error-message"></p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
