@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Dev Toolkit</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>AI Dev Toolkit</h1>
+        <p>A suite of AI tools to help programmers generate, explain, debug, and translate code.</p>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('generate')">Code Generator</button>
+            <button class="tab-button" onclick="showTab('debug')">Code Debugger</button>
+            <button class="tab-button" onclick="showTab('explain')">Code Explainer</button>
+            <button class="tab-button" onclick="showTab('unittest')">Unit Test Generator</button>
+            <button class="tab-button" onclick="showTab('translate')">Code Translator</button>
+            <button class="tab-button" onclick="showTab('regex')">Regex Generator</button>
+            <button class="tab-button" onclick="showTab('nl2sql')">NL to SQL</button>
+            <button class="tab-button" onclick="showTab('md2html')">Markdown to HTML</button>
+        </div>
+
+        <div id="generate" class="tab-content active">
+            <h3>Code Snippet Generator</h3>
+            <form id="generate-form">
+                <label for="gen-language">Language:</label>
+                <select id="gen-language">
+                    <option value="Python">Python</option>
+                    <option value="JavaScript">JavaScript</option>
+                    <option value="Java">Java</option>
+                    <option value="C++">C++</option>
+                </select>
+                <label for="gen-prompt">Describe the code:</label>
+                <textarea id="gen-prompt" placeholder="e.g., function to reverse a string"></textarea>
+                <button type="submit">Generate Code</button>
+            </form>
+            <div id="gen-result" class="result"></div>
+        </div>
+
+        <div id="debug" class="tab-content">
+            <h3>Code Debugger</h3>
+            <form id="debug-form">
+                <label for="debug-code">Paste buggy code:</label>
+                <textarea id="debug-code" placeholder="def add(a, b): return a - b"></textarea>
+                <button type="submit">Debug Code</button>
+            </form>
+            <div id="debug-result" class="result"></div>
+        </div>
+
+        <div id="explain" class="tab-content">
+            <h3>Code Explainer</h3>
+            <form id="explain-form">
+                <label for="explain-code">Paste code to explain:</label>
+                <textarea id="explain-code" placeholder="def factorial(n): return 1 if n == 0 else n * factorial(n-1)"></textarea>
+                <button type="submit">Explain Code</button>
+            </form>
+            <div id="explain-result" class="result"></div>
+        </div>
+
+        <div id="unittest" class="tab-content">
+            <h3>Unit Test Generator</h3>
+            <form id="unittest-form">
+                <label for="unittest-code">Paste function/class:</label>
+                <textarea id="unittest-code" placeholder="def add(a, b): return a + b"></textarea>
+                <button type="submit">Generate Tests</button>
+            </form>
+            <div id="unittest-result" class="result"></div>
+        </div>
+
+        <div id="translate" class="tab-content">
+            <h3>Code Translator</h3>
+            <form id="translate-form">
+                <label for="translate-code">Paste code:</label>
+                <textarea id="translate-code" placeholder="def add(a, b): return a + b"></textarea>
+                <label for="translate-target">Target Language:</label>
+                <select id="translate-target">
+                    <option value="JavaScript">JavaScript</option>
+                    <option value="Java">Java</option>
+                    <option value="C++">C++</option>
+                </select>
+                <button type="submit">Translate Code</button>
+            </form>
+            <div id="translate-result" class="result"></div>
+        </div>
+
+        <div id="regex" class="tab-content">
+            <h3>Regex Generator</h3>
+            <form id="regex-form">
+                <label for="regex-desc">Describe the pattern:</label>
+                <textarea id="regex-desc" placeholder="match email address"></textarea>
+                <button type="submit">Generate Regex</button>
+            </form>
+            <div id="regex-result" class="result"></div>
+        </div>
+
+        <div id="nl2sql" class="tab-content">
+            <h3>Natural Language to SQL</h3>
+            <form id="nl2sql-form">
+                <label for="nl2sql-query">Natural language query:</label>
+                <textarea id="nl2sql-query" placeholder="Show all users who joined in 2022"></textarea>
+                <button type="submit">Convert to SQL</button>
+            </form>
+            <div id="nl2sql-result" class="result"></div>
+        </div>
+
+        <div id="md2html" class="tab-content">
+            <h3>Markdown to HTML Previewer</h3>
+            <form id="md2html-form">
+                <label for="md2html-markdown">Markdown text:</label>
+                <textarea id="md2html-markdown" placeholder="# Hello World\n\nThis is **bold** text."></textarea>
+                <button type="submit">Convert to HTML</button>
+            </form>
+            <div id="md2html-result" class="result"></div>
+            <div id="md2html-preview" class="preview"></div>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

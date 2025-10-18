@@ -32,7 +32,7 @@ def generate_snippet():
         # Generate code using local transformer model
         result = generator(
             full_prompt,
-            max_length=200,
+            max_new_tokens=100,
             num_return_sequences=1,
             temperature=0.7,
             do_sample=True,
